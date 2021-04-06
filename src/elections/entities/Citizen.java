@@ -2,6 +2,8 @@ package elections.entities;
 
 import elections.exceptions.PassportNumberWrongException;
 
+import java.util.Objects;
+
 public class Citizen {
     private String name;
     private String passport;
@@ -70,5 +72,27 @@ public class Citizen {
 
     public void setCarantine(boolean carantine) {
         this.carantine = carantine;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Citizen citizen = (Citizen) o;
+        return birthYear == citizen.birthYear && name.equals(citizen.name) && passport.equals(citizen.passport);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, passport, birthYear);
+    }
+
+    @Override
+    public String toString() {
+        return "Citizen{" +
+                "name='" + name + '\'' +
+                ", passport='" + passport + '\'' +
+                ", birthYear=" + birthYear +
+                '}';
     }
 }

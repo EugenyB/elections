@@ -1,15 +1,52 @@
 package elections.entities;
 
-import java.time.LocalDate;
+import java.util.Arrays;
 
-public class BallotBox {
+public abstract class BallotBox {
 
-    private Citizen[] citizens = new Citizen[10];
-    private int count = 0;
+    protected Citizen[] citizens = new Citizen[10];
+    protected int countCitizens = 0;
 
+    private static int countBallotBoxes = 0;
 
-    public boolean check(Citizen citizen) {
-        int year = LocalDate.now().getYear();
-        return !citizen.isCarantine() && (year - citizen.getBirthYear() > 21);
+    private int number;
+    private String address;
+
+    public BallotBox(String address) {
+        this.address = address;
+        number = ++countBallotBoxes;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public abstract boolean check(Citizen citizen);
+
+    public Citizen[] getCitizens() {
+        return Arrays.copyOf(citizens, countCitizens);
+    }
+
+    public void addCitizen(Citizen citizen) {
+        ensureCapacity(countCitizens + 1);
+        citizens[countCitizens++] = citizen;
+    }
+
+    public void ensureCapacity(int newCapacity){
+        if (newCapacity >= citizens.length) {
+            citizens = Arrays.copyOf(citizens, citizens.length*2);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "BallotBox{" +
+                "number=" + number +
+                ", address='" + address + '\'' +
+                '}';
     }
 }

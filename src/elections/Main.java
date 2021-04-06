@@ -1,5 +1,6 @@
 package elections;
 
+import elections.entities.BallotBox;
 import elections.entities.Citizen;
 import elections.exceptions.PassportNumberWrongException;
 
@@ -15,6 +16,7 @@ public class Main {
 
     public void run() {
         management = new Management();
+        management.init();
 
         while (true) {
             switch (menu()) {
@@ -23,17 +25,21 @@ public class Main {
                 case 2:
                         try {
                             Citizen citizen = readCitizenFromKeyboard();
-                            int box = chooseBallotBox();
-                            management.addCitizen(citizen, box);
-                            System.out.println("Citizen was added!");
-
+                            if (management.exists(citizen)) {
+                                System.out.println("This citizen already exists");
+                            } else {
+                                BallotBox box = chooseBallotBox(citizen);
+                                management.addCitizen(citizen, box);
+                                System.out.println("Citizen was added!");
+                            }
                         } catch (PassportNumberWrongException e) {
                             System.err.println(e.getMessage());
                         }
                     break;
                 case 3: management.addParty();
                     break;
-                case 5: management.showBallotBoxes();
+                case 5:
+                    showBoxes(management.getBallotBoxes());
                     break;
                 case 6: management.showCitizens();
                     break;
@@ -43,6 +49,43 @@ public class Main {
             }
         }
     }
+
+    private void showBoxes(BallotBox[] ballotBoxes) {
+//        for (int i = 0; i < ballotBoxes.length; i++) {
+//            BallotBox box = ballotBoxes[i];
+//            System.out.println(box);
+//        }
+        for (BallotBox box : ballotBoxes) {
+            System.out.println(box);
+        }
+        System.out.println("Choose BallotBox Number for full info:");
+        Scanner in = new Scanner(System.in);
+        int num = in.nextInt();
+        Citizen[] citizens = management.findBallotBox(num).getCitizens();
+        printCitizens(citizens);
+    }
+
+    private void printCitizens(Citizen[] citizens) {
+        for (Citizen citizen : citizens) {
+            System.out.println(citizen);
+        }
+    }
+
+    private BallotBox chooseBallotBox(Citizen citizen) {
+        BallotBox[] appropriated = management.findAppropriateBallotBoxes(citizen);
+        System.out.println("----- Appropriated Ballot Boxes are: -----");
+        for (int i = 0; i < appropriated.length; i++) {
+            System.out.println(appropriated[i]);
+        }
+        Scanner in = new Scanner(System.in);
+        System.out.print("Choose one: ");
+        int num = in.nextInt();
+        for (BallotBox box : appropriated) {
+            if (box.getNumber() == num) return box;
+        }
+        return null;
+    }
+
 
     private Citizen readCitizenFromKeyboard() throws PassportNumberWrongException {
         Scanner in = new Scanner(System.in);

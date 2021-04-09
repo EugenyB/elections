@@ -1,9 +1,9 @@
 package elections;
 
-import elections.entities.BallotBox;
-import elections.entities.Citizen;
+import elections.entities.*;
 import elections.exceptions.PassportNumberWrongException;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class Main {
@@ -18,9 +18,13 @@ public class Main {
         management = new Management();
         management.init();
 
+        init();
+
         while (true) {
             switch (menu()) {
-                case 1: management.addBallotBox();
+                case 1:
+                    BallotBox newBallotBox = readBallotBoxFromKeyboard();
+                    management.addBallotBox(newBallotBox);
                     break;
                 case 2:
                         try {
@@ -36,18 +40,124 @@ public class Main {
                             System.err.println(e.getMessage());
                         }
                     break;
-                case 3: management.addParty();
+                case 3:
+                    Party newParty = readPartyFromKeyboard();
+                    management.addParty(newParty);
                     break;
                 case 5:
                     showBoxes(management.getBallotBoxes());
                     break;
-                case 6: management.showCitizens();
+                case 6:
+                    printCitizens();
                     break;
-                case 7: management.showParties();
+                case 7:
+                    printParties();
                     break;
                 case 10: return;
             }
         }
+    }
+
+    private void printCitizens() {
+        Citizen[] citizens = management.showCitizens();
+        System.out.println("----- Citizens are: ------");
+        printArray(citizens);
+        System.out.println("-------------------------");
+    }
+
+    private void printArray(Object[] arr) {
+        for (Object o : arr) {
+            System.out.println(o);
+        }
+    }
+
+    private void printParties() {
+        Party[] parties = management.showParties();
+        System.out.println("----- Parties are: ------");
+        printArray(parties);
+        System.out.println("-------------------------");
+    }
+
+    private Party readPartyFromKeyboard() {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Name of party:");
+        String name = in.nextLine();
+        System.out.println("Date of creation (y m d): ");
+        int year = in.nextInt();
+        int month = in.nextInt();
+        int day = in.nextInt();
+        LocalDate date = LocalDate.of(year, month, day);
+        System.out.println("Fraction 1 - Left, 2 - Center, 3 - Right");
+        int fraction;
+        do {
+            fraction = in.nextInt();
+            if (fraction < 1 || fraction >3) System.out.println("Incorrect fraction. Repeat.");
+        } while (fraction < 1 || fraction >3);
+        switch(fraction) {
+            case 1: return new Party(name, Fraction.LEFT, date);
+            case 2: return new Party(name, Fraction.CENTER, date);
+            case 3: return new Party(name, Fraction.RIGHT, date);
+        }
+        return null;
+    }
+
+    private BallotBox readBallotBoxFromKeyboard() {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Address of BallotBox");
+        String address = in.nextLine();
+        System.out.println("1 - Normal, 2 - Carantine, 3 - Army");
+        int type;
+        do {
+            type = in.nextInt();
+            if (type < 1 || type >3) System.out.println("Incorrect type. Repeat.");
+        } while (type < 1 || type >3);
+        switch (type) {
+            case 1: return new NormalBallotBox(address);
+            case 2: return new CarantineBallotBox(address);
+            case 3: return new ArmyBallotBox(address);
+            default: return null;
+        }
+    }
+
+    private void init() {
+        management.addBallotBox(new NormalBallotBox("First Street, 1"));
+        management.addBallotBox(new NormalBallotBox("First Street, 20"));
+        management.addBallotBox(new ArmyBallotBox("Second Str, 2"));
+        management.addBallotBox(new CarantineBallotBox("Another Str, 13"));
+
+        try {
+            Citizen c1 = Citizen.of("Ian Iza", "123456789", 1995);
+            management.addCitizen(c1, management.getBallotBox(0));
+
+            Citizen c2 = Citizen.of("Bet Bets", "111111111", 1990);
+            management.addCitizen(c2, management.getBallotBox(0));
+
+            Citizen c3 = Citizen.of("Ben Yan", "987654321", 2000);
+            management.addCitizen(c3, management.getBallotBox(2));
+
+            Citizen c4 = Citizen.of("Bin Bolnoy", "123123123", 1998);
+            c4.setCarantine(true);
+            management.addCitizen(c4, management.getBallotBox(3));
+
+            Citizen c5 = Citizen.of("Ben Best", "212121212", 1990);
+            management.addCitizen(c5, management.getBallotBox(1));
+
+            Party p1 = new Party("Party 1", Fraction.LEFT, LocalDate.of(1990, 5, 1));
+            management.addParty(p1);
+            p1.addMember(c1);
+            p1.addMember(c2);
+
+            Party p2 = new Party("Party 2", Fraction.CENTER, LocalDate.of(1980, 1, 1));
+            management.addParty(p2);
+            p2.addMember(c3);
+
+            Party p3 = new Party("Party 3", Fraction.RIGHT, LocalDate.of(1984, 10, 10));
+            management.addParty(p3);
+            p3.addMember(c5);
+
+        } catch (Exception e) {}
+
+
     }
 
     private void showBoxes(BallotBox[] ballotBoxes) {

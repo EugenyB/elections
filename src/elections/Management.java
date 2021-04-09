@@ -1,6 +1,8 @@
 package elections;
 
 import elections.entities.*;
+import elections.exceptions.CitizenAlreadyIsAMemberOfParty;
+import elections.exceptions.CitizenIsNotExist;
 
 import java.util.Arrays;
 
@@ -12,47 +14,67 @@ public class Management {
     private BallotBox[] boxes = new BallotBox[10];
     private int boxCount = 0;
 
+    private Party[] parties = new Party[10];
+    private int partyCount = 0;
+
 
     public void init() {
-        boxes[0] = new NormalBallotBox("First Street, 1");
-        boxes[1] = new NormalBallotBox("First Street, 20");
-        boxes[2] = new ArmyBallotBox("Second Str, 2");
-        boxes[3] = new CarantineBallotBox("Another Str, 13");
-        boxCount = 4;
-        try {
-            Citizen c = Citizen.of("Ian Iza", "123456789", 1995);
-            addCitizen(c, boxes[0]);
-            c = Citizen.of("Bet Bets", "111111111", 1990);
-            addCitizen(c, boxes[0]);
-
-            c = Citizen.of("Ben Yan", "987654321", 2000);
-            addCitizen(c, boxes[2]);
-
-            c = Citizen.of("Bin Bolnoy", "123123123", 1998);
-            c.setCarantine(true);
-            addCitizen(c, boxes[3]);
-
-            c = Citizen.of("Ben Best", "212121212", 1990);
-            addCitizen(c, boxes[1]);
-
-        } catch (Exception e) {}
     }
 
-    public void showParties() {
-
+    public BallotBox getBallotBox(int num) {
+        return boxes[num];
     }
 
-    public void showCitizens() {
+    public Party[] showParties() {
+        return Arrays.copyOf(parties, partyCount);
+    }
 
+    public Citizen[] showCitizens() {
+        return Arrays.copyOf(citizens, citizenCount);
     }
 
     public BallotBox[] getBallotBoxes() {
         return Arrays.copyOf(boxes, boxCount);
     }
 
-    public void addParty() {
-
+    public boolean addParty(Party party) {
+        ensurePartyCapacity(partyCount+1);
+        parties[partyCount++] = party;
+        return true;
     }
+
+    private void ensurePartyCapacity(int newCapacity) {
+        if (newCapacity > parties.length) {
+            parties = Arrays.copyOf(parties, parties.length * 2);
+        }
+    }
+
+    public void addMemberToParty(Party party, String citizenPassport) throws CitizenIsNotExist, CitizenAlreadyIsAMemberOfParty {
+        Citizen c = findCitizen(citizenPassport);
+        if (c == null) {
+            throw new CitizenIsNotExist(citizenPassport);
+        }
+        Party p = findParty(c);
+        if (p != null) {
+            throw new CitizenAlreadyIsAMemberOfParty(c, p);
+        }
+        party.addMember(c);
+    }
+
+    private Party findParty(Citizen c) {
+        for (int i = 0; i < partyCount; i++) {
+            if (parties[i].contains(c)) return parties[i];
+        }
+        return null;
+    }
+
+    private Citizen findCitizen(String citizenPassport) {
+        for (int i = 0; i < citizenCount; i++) {
+            if (citizens[i].getPassport().equals(citizenPassport)) return citizens[i];
+        }
+        return null;
+    }
+
 
     public boolean addCitizen(Citizen citizen, BallotBox box) {
         ensureCitizenCapacity(citizenCount+1);
@@ -68,8 +90,16 @@ public class Management {
         }
     }
 
-    public void addBallotBox() {
+    public boolean addBallotBox(BallotBox box) {
+        ensureBallotBoxCapacity(boxCount+1);
+        boxes[boxCount++] = box;
+        return true;
+    }
 
+    private void ensureBallotBoxCapacity(int newCapacity) {
+        if (newCapacity > boxes.length) {
+            boxes = Arrays.copyOf(boxes, boxes.length * 2);
+        }
     }
 
     public BallotBox[] findAppropriateBallotBoxes(Citizen citizen) {

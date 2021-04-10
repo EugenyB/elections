@@ -1,8 +1,10 @@
 package elections;
 
-import elections.entities.*;
-import elections.exceptions.CitizenAlreadyIsAMemberOfParty;
-import elections.exceptions.CitizenIsNotExist;
+import elections.entities.BallotBox;
+import elections.entities.Citizen;
+import elections.entities.Party;
+import elections.exceptions.CitizenAlreadyIsAMemberOfPartyException;
+import elections.exceptions.CitizenIsNotExistException;
 
 import java.util.Arrays;
 
@@ -17,8 +19,20 @@ public class Management {
     private Party[] parties = new Party[10];
     private int partyCount = 0;
 
+    private int electionMonth;
+    private int electionYear;
+
+    private int[][] votes;
 
     public void init() {
+    }
+
+    public int getElectionMonth() {
+        return electionMonth;
+    }
+
+    public int getElectionYear() {
+        return electionYear;
     }
 
     public BallotBox getBallotBox(int num) {
@@ -33,7 +47,7 @@ public class Management {
         return Arrays.copyOf(citizens, citizenCount);
     }
 
-    public BallotBox[] getBallotBoxes() {
+    public BallotBox[] showBallotBoxes() {
         return Arrays.copyOf(boxes, boxCount);
     }
 
@@ -49,26 +63,27 @@ public class Management {
         }
     }
 
-    public void addMemberToParty(Party party, String citizenPassport) throws CitizenIsNotExist, CitizenAlreadyIsAMemberOfParty {
+    public void addMemberToParty(Party party, String citizenPassport) throws CitizenIsNotExistException, CitizenAlreadyIsAMemberOfPartyException {
+
         Citizen c = findCitizen(citizenPassport);
         if (c == null) {
-            throw new CitizenIsNotExist(citizenPassport);
+            throw new CitizenIsNotExistException(citizenPassport);
         }
         Party p = findParty(c);
         if (p != null) {
-            throw new CitizenAlreadyIsAMemberOfParty(c, p);
+            throw new CitizenAlreadyIsAMemberOfPartyException(c, p);
         }
         party.addMember(c);
     }
 
-    private Party findParty(Citizen c) {
+    public Party findParty(Citizen c) {
         for (int i = 0; i < partyCount; i++) {
             if (parties[i].contains(c)) return parties[i];
         }
         return null;
     }
 
-    private Citizen findCitizen(String citizenPassport) {
+    public Citizen findCitizen(String citizenPassport) {
         for (int i = 0; i < citizenCount; i++) {
             if (citizens[i].getPassport().equals(citizenPassport)) return citizens[i];
         }
@@ -125,5 +140,64 @@ public class Management {
             if (box.getNumber() == num) return box;
         }
         return null;
+    }
+
+    public boolean checkIfCitizenWantToVote(Citizen citizen){
+        if (citizen.checkIfCitizenWantToVote(citizen) ){
+            return true;
+        }else return false;
+    }
+
+
+    public void chooseParty (Citizen citizen ){
+
+    }
+
+    public String partyGetName(Party party){
+        return party.getName();
+    }
+
+
+    public void setElectionDate(int month, int year) {
+        electionMonth = month;
+        electionYear = year;
+    }
+
+    public void acceptVoting(Citizen citizen, Party party) {
+        BallotBox ballotBox = citizen.getBallotBox();
+
+        int i = indexOfBallotBox(ballotBox);
+
+        int j = indexOfParty(party);
+
+        votes[i][j]++;
+    }
+
+    private int indexOfParty(Party party) {
+        int j = 0;
+        while (!party.equals(parties[j])) j++;
+        return j;
+    }
+
+    private int indexOfBallotBox(BallotBox ballotBox) {
+        int i = 0;
+        while (!ballotBox.equals(boxes[i])) i++;
+        return i;
+    }
+
+    public void clearVotes() {
+        votes = new int[boxCount][partyCount];
+    }
+
+    public int getVotes(int p, int b) {
+        return votes[b][p];
+    }
+
+    public int getResultByParty(int p) {
+        int sum = 0;
+        for (int i = 0; i < votes.length; i++) {
+            sum += votes[i][p];
+        }
+        return sum;
     }
 }

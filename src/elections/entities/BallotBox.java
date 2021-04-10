@@ -1,6 +1,9 @@
 package elections.entities;
 
+import elections.Management;
+
 import java.util.Arrays;
+import java.util.Objects;
 
 public abstract class BallotBox {
 
@@ -11,10 +14,16 @@ public abstract class BallotBox {
 
     private int number;
     private String address;
+    private Management management;
 
-    public BallotBox(String address) {
+    public BallotBox(String address, Management management) {
         this.address = address;
         number = ++countBallotBoxes;
+        this.management = management;
+    }
+
+    public Management getManagement() {
+        return management;
     }
 
     public int getNumber() {
@@ -40,6 +49,19 @@ public abstract class BallotBox {
         if (newCapacity >= citizens.length) {
             citizens = Arrays.copyOf(citizens, citizens.length*2);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BallotBox)) return false;
+        BallotBox ballotBox = (BallotBox) o;
+        return number == ballotBox.number && Objects.equals(address, ballotBox.address);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(number, address);
     }
 
     @Override

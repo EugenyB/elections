@@ -51,11 +51,7 @@ public class Party {
 
     @Override
     public String toString() {
-        return "Party{" +
-                "name='" + name + '\'' +
-                ", fraction=" + fraction +
-                ", dateOfCreation=" + dateOfCreation +
-                '}';
+        return "Party{" + name + ", fraction - " + fraction + ", created " + dateOfCreation + '}';
     }
 
     @Override
@@ -70,4 +66,5 @@ public class Party {
     public int hashCode() {
         return Objects.hash(name, fraction, dateOfCreation);
     }
+
 }

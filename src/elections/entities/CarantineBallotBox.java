@@ -1,16 +1,16 @@
 package elections.entities;
 
-import java.time.LocalDate;
+import elections.Management;
 
 public class CarantineBallotBox extends BallotBox {
 
-    public CarantineBallotBox(String address) {
-        super(address);
+    public CarantineBallotBox(String address, Management management) {
+        super(address, management);
     }
 
     @Override
     public boolean check(Citizen citizen) {
-        int year = LocalDate.now().getYear();
+        int year = getManagement().getElectionYear();
         return citizen.isCarantine() && (year - citizen.getBirthYear() >= 18);
     }
 

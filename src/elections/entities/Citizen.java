@@ -3,6 +3,7 @@ package elections.entities;
 import elections.exceptions.PassportNumberWrongException;
 
 import java.util.Objects;
+import java.util.Scanner;
 
 public class Citizen {
     private String name;
@@ -73,6 +74,23 @@ public class Citizen {
     public void setCarantine(boolean carantine) {
         this.carantine = carantine;
     }
+
+    public boolean checkIfCitizenWantToVote(Citizen c) {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Do you want to vote?");
+        System.out.println("1 - Yes , 2 - Not ");
+        int voteChoice;
+        do {
+            voteChoice = in.nextInt();
+            if (  1 < voteChoice || voteChoice > 2 ){
+                System.out.println("Incorrect choice , please repeat");
+            }
+        }while (1 < voteChoice || voteChoice > 2);
+        if (voteChoice == 1 ) {
+            return true;
+        }else return false;
+    }
+
 
     @Override
     public boolean equals(Object o) {
